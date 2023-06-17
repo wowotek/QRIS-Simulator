@@ -187,7 +187,7 @@ async function questionAndSaveToConfig() {
         "user_config.json",
         JSON.stringify({
             apiKey,
-            mId: parseInt(mID, 10),
+            mID: parseInt(mID, 10),
             port: parsedPort,
             hostname
         }, null, 2),
@@ -204,6 +204,7 @@ async function getConfiguration(): Promise<{ apiKey: string, mID: number, port: 
         .catch(_ => null);
     
     if(!file) {
+        console.error("File Not Found!");
         await questionAndSaveToConfig();
         return await getConfiguration();
     }
@@ -214,6 +215,7 @@ async function getConfiguration(): Promise<{ apiKey: string, mID: number, port: 
     ];
 
     if(__fieldcheck.includes(null) || __fieldcheck.includes(undefined) || __fieldcheck.includes("") || __fieldcheck.includes(" ")) {
+        console.log(__fieldcheck)
         await questionAndSaveToConfig();
         return await getConfiguration();
     }

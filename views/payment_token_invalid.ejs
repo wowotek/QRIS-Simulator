@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=BIZ+UDPGothic">
+    <title>Document</title>
+</head>
+<style>
+    * {
+        font-family: "BIZ UDPGothic", 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+        text-shadow: rgba(0,0,0,0.4) 0 0 1px;
+    }
+
+    body, html {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #ddd;
+    }
+
+    body {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-direction: column;
+    }
+</style>
+<body>
+    <img src="/x.webp" style="max-width: 40vw; max-height: 40vh;  margin-bottom: 80px; margin-top: 80px" alt="">
+    <h2 style="display: flex; justify-content: center; align-items: center; ">Payment Token Not Found !</h1>
+    <h3 style="display: flex; justify-content: center; align-items: center; margin: 0; padding: 0; padding-bottom: 50px">Token Provided :</h2>
+    <code style="background: #aaa; padding: 8px; padding-left: 20px; padding-right: 20px;">
+        <%= token %>
+    </code>
+</body>
+</html>

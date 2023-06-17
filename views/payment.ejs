@@ -9,7 +9,7 @@
 </head>
 <style>
   * {
-    font-family: "BIZ UDPGothic";
+    font-family: "BIZ UDPGothic", 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -216,7 +216,7 @@
       <h3>Jumlah Tagihan Anda</h3>
       <h2>Rp<b id="amount"><%= amount %></b><sub>,-</sub></h2>
     </div>
-    <form action="/pay?t=SOMERANDOMTOKEN" method="POST" id="someform" name="someform"></form>
+    <form action="/not_official/pay?t=<%= token %>" method="POST" id="someform" name="someform"></form>
     <label for="custn">Nama Anda</label>
     <input type="text" name="customer_name" id="custn" form="someform">
 

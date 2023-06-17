@@ -34,7 +34,7 @@ class Invoice {
         ).toString("hex");
         
         const config = getConfigurationSync();
-        this._qrcode = `http://${config.hostname}:${config.port}/mp?t=${this._token}`
+        this._qrcode = `http://${config.hostname}:${config.port}/not_official/mockupPayment?t=${this._token}`
 
         Invoices.set(number, this);
     }
@@ -48,6 +48,7 @@ class Invoice {
     public get isPaid() { return this._isPaid };
     public get customerName() { return this._customerName };
     public get paymentMethodBy() { return this._paymentMethodBy };
+    public get token() { return this._token };
     public get isExpired() {
         return new Date().getTime() > this.expiredDate.getTime()
     }
@@ -113,6 +114,14 @@ class Invoice {
         }
         return false;
     }
+}
+
+async function getInvoiceByToken(token: string) {
+    for(const [_, invoice] of Invoices.entries()) {
+        if(invoice.token == token) return invoice
+    }
+
+    return null
 }
 
 let config: {
@@ -250,6 +259,41 @@ export async function mixins_createInvoice(req: Request, res: Response, next: Ne
             qris_nmid: NMID
         }
     });
+}
 
-    next();
+export async function mixins_mockupPayment(req: Request, res: Response, next: NextFunction) {
+    const token = req.query.t;
+    if(!token || token == "" || token == " " || token == "0") return res.status(400).render("invalid_address", { cache: true });
+
+    const invoice = await getInvoiceByToken(token as string);
+    if(!invoice) return res.status(404).render("payment_token_invalid", {
+        token: token
+    });
+
+    res.status(200).render("payment", {
+        token: invoice.token,
+        amount: invoice.amount
+    })
+}
+
+export async function mixins_makePayments(req: Request, res: Response, next: NextFunction) {
+    const token = req.query.t;
+    console.log(req.body);
+    if(!token || token == "" || token == " " || token == "0") return res.status(400).render("invalid_address", { cache: true });
+
+    const invoice = await getInvoiceByToken(token as string);
+    if(!invoice) return res.status(404).render("payment_status_failed", {
+        token: token,
+        reason: "invoice with that token is not found"
+    });
+
+    const status = invoice.pay(req.body.customer_name, req.body.payment_method)
+    if(!status) return res.status(400).render("payment_status_failed", {
+        token: token,
+        reason: "invoice already expired!"
+    });
+    
+    res.status(200).render("payment_status_success", {
+        customer_name: req.body.customer_name ? invoice.customerName : "Our Dear Customer"
+    })
 }
