@@ -34,7 +34,7 @@ class Invoice {
         ).toString("hex");
         
         const config = getConfigurationSync();
-        this._qrcode = `http://${config.hostname}:${config.port}/mp?t=${this._token}`
+        this._qrcode = `http://${config.hostname}:${config.port}/not_official/mockupPayment?t=${this._token}`
 
         Invoices.set(number, this);
     }
@@ -48,6 +48,7 @@ class Invoice {
     public get isPaid() { return this._isPaid };
     public get customerName() { return this._customerName };
     public get paymentMethodBy() { return this._paymentMethodBy };
+    public get token() { return this._token };
     public get isExpired() {
         return new Date().getTime() > this.expiredDate.getTime()
     }
@@ -104,6 +105,8 @@ class Invoice {
             this._paymentMethodBy = paymentMethod;
         }
 
+        this._isPaid = true;
+
         return true;
     }
 
@@ -113,6 +116,14 @@ class Invoice {
         }
         return false;
     }
+}
+
+async function getInvoiceByToken(token: string) {
+    for(const [_, invoice] of Invoices.entries()) {
+        if(invoice.token == token) return invoice
+    }
+
+    return null
 }
 
 let config: {
@@ -125,12 +136,13 @@ let config: {
 export async function mixins_checkInvoice(req: Request, res: Response, next: NextFunction) {
     if(config == null) config = await getConfiguration();
 
-    const _invid: string | null | undefined = req.query.mID as string | undefined | null;
-    const _trxvalue: string | null | undefined = req.query.mID as string | undefined | null;
-    const _trxdate: string | null | undefined = req.query.mID as string | undefined | null;
+    const _do: string | null | undefined = req.query.do as string | undefined | null;
+    const _invid: string | null | undefined = req.query.invid as string | undefined | null;
+    const _trxvalue: string | null | undefined = req.query.trxvalue as string | undefined | null;
+    const _trxdate: string | null | undefined = req.query.trxdate as string | undefined | null;
 
     const __fieldcheck = [
-        _invid, _trxvalue, _trxdate
+        _do, _invid, _trxvalue, _trxdate
     ];
 
     if(__fieldcheck.includes(null) || __fieldcheck.includes(undefined) || __fieldcheck.includes("") || __fieldcheck.includes(" ") || __fieldcheck.includes("0")) return res.status(400).json({
@@ -140,8 +152,16 @@ export async function mixins_checkInvoice(req: Request, res: Response, next: Nex
         }
     });
 
+    if(_do as string != "checkStatus") return void res.status(400).json({
+        status: "failed",
+        data: {
+            qris_status: "parameter `do` must be \"checkStatus\" (what we do for you?)"
+        }
+    });
+
     let foundInvoice: null | Invoice = null;
-    for(const [_, invoice] of Array.from(Invoices.entries())) {
+    for(const [_, invoice] of Invoices.entries()) {
+        console.log(invoice.id, _invid)
         if(invoice.id == _invid) {
             foundInvoice = invoice;
             break
@@ -198,12 +218,20 @@ export async function mixins_checkInvoice(req: Request, res: Response, next: Nex
 export async function mixins_createInvoice(req: Request, res: Response, next: NextFunction)  {
     if(config == null) config = await getConfiguration();
 
+    const _do: string | null | undefined = req.query.do as string | undefined | null;
     const _cliTrxNumber: string | null | undefined = req.query.cliTrxNumber as string | undefined | null;
     const _cliTrxAmount: string | null | undefined = req.query.cliTrxAmount as string | undefined | null;
 
     const __fieldcheck = [
-        _cliTrxNumber, _cliTrxAmount,
+        _do, _cliTrxNumber, _cliTrxAmount,
     ];
+
+    if(_do as string != "create-invoice") return void res.status(400).json({
+        status: "failed",
+        data: {
+            qris_status: "parameter `do` must be \"create-invoice\" (what we do for you?)"
+        }
+    });
 
     if(__fieldcheck.includes(null) || __fieldcheck.includes(undefined)) return res.status(400).json({
         status: "failed",
@@ -240,9 +268,13 @@ export async function mixins_createInvoice(req: Request, res: Response, next: Ne
     rd.setHours(rd.getHours() + 7);
 
     const qr = (await QRCode.toBuffer(invoice.qrcode, { errorCorrectionLevel: "H", maskPattern: 7 })).toString("base64")
-    console.log(await QRCode.toString(invoice.qrcode, { errorCorrectionLevel: "H", maskPattern: 7 }));
+    console.log("GENERATED QRCODE:");
+    console.log(await QRCode.toString(invoice.qrcode, { errorCorrectionLevel: "L", maskPattern: 0 }));
     res.status(200).json({
         status: "success",
+        ___unofficial_data: {
+            url: invoice.qrcode,
+        },
         data: {
             qris_content: qr,
             qris_request_date: rd.toISOString().replace("T", " ").replace("Z", "").split(".")[0],
@@ -250,6 +282,41 @@ export async function mixins_createInvoice(req: Request, res: Response, next: Ne
             qris_nmid: NMID
         }
     });
+}
 
-    next();
+export async function mixins_mockupPayment(req: Request, res: Response, next: NextFunction) {
+    const token = req.query.t;
+    if(!token || token == "" || token == " " || token == "0") return res.status(400).render("invalid_address", { cache: true });
+
+    const invoice = await getInvoiceByToken(token as string);
+    if(!invoice) return res.status(404).render("payment_token_invalid", {
+        token: token
+    });
+
+    res.status(200).render("payment", {
+        token: invoice.token,
+        amount: invoice.amount
+    })
+}
+
+export async function mixins_makePayments(req: Request, res: Response, next: NextFunction) {
+    const token = req.query.t;
+    console.log(req.body);
+    if(!token || token == "" || token == " " || token == "0") return res.status(400).render("invalid_address", { cache: true });
+
+    const invoice = await getInvoiceByToken(token as string);
+    if(!invoice) return res.status(404).render("payment_status_failed", {
+        token: token,
+        reason: "invoice with that token is not found"
+    });
+
+    const status = invoice.pay(req.body.customer_name, req.body.payment_method)
+    if(!status) return res.status(400).render("payment_status_failed", {
+        token: token,
+        reason: "invoice already expired!"
+    });
+    
+    res.status(200).render("payment_status_success", {
+        customer_name: req.body.customer_name ? invoice.customerName : "Our Dear Customer"
+    })
 }

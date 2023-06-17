@@ -1,10 +1,10 @@
 {
   "name": "qris_simulator",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Unofficial QRIS Simulator",
   "scripts": {
-    "dev": "ts-node-dev src/index.ts",
-    "run": "ts-node src/index.ts"
+    "start-dev": "ts-node-dev src/index.ts",
+    "start": "tsc && node dist/index.js"
   },
   "keywords": [
     "payment gateway",
