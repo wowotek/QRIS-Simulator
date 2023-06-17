@@ -126,7 +126,7 @@ response yang diterima setelah hit tahap 0
             - berisi jumlah yang ditagihkan ke customer
         - `trxdate `
             - tanggal transaksi yang didapatkan pada tahap 0 dengan format `YYYY-mm-dd`
-
+5. Selesai
 
 ## Kontribusi
 

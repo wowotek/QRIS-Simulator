@@ -1,6 +1,6 @@
 {
   "name": "qris_simulator",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Unofficial QRIS Simulator",
   "scripts": {
     "start-dev": "ts-node-dev src/index.ts",
