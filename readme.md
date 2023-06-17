@@ -75,7 +75,58 @@ Sesuai dengan ketentuan penggunaan API Key untuk API Call, API Key dapat terkena
 
 ## Penggunaan
 
-> TODO: tulis penggunaan
+Setelah melewati tahap membuat atau menjalani questioner
+setup server make selanjutnya `Host URL` akan disingkat menjadi `[HOST]` maka jika `Host Url` anda adalah
+`localhost:3333` maka `[HOST]/indeks` artinya adalah
+`http://localhost:3333/indeks`.
+
+Anda bisa menggunakan tata cara dibawah, atau mengikuti tahap
+yang terdokumentasikan secara Official oleh [Website QRIS](https://qris.id/api-doc/index.php).
+
+Untuk mockup pembayaran silahkan lakukan **tahap nomor 2**
+
+
+0. Buat Invoice (Creat Invoice) dengan hit ke
+    - URI: `[HOST]/restapi/qris/show_qris.php`
+    - METHOD: `GET`
+    - Query Parameter
+        - `do`
+            - berisi `create-invoice` (**WAJIB**)
+        - `apikey`
+            - berisi `API KEY` yang anda masukan pada tahap
+            questioner, atau yang ada didalam `user_config.json`
+        - `mID`
+            - berisi `mID` yang anda masukan pada tahap
+            questioner, atau yang ada didalam `user_config.json`
+        - `cliTrxNumber`
+            - adalah nomor invoice yang secara unik anda generate
+            - Nomor ini harus unik setiap kali
+        - `cliTrxAmount`
+            - Jumlah yang perlu dibayar oleh customer
+1. QRCode mockup akan tergenerate di Console / Terminal,
+atau bisa juga anda lakukan generate QRCode sesuai dengan
+response yang diterima setelah hit tahap 0
+2. Scan QR Code yang digenerate
+3. Masukan Nama Customer (Opsional) dan masukan mockup metode pembayaran (Wajib)
+4. Lakukan hit Cek Pembayaran (Check Invoice Status)
+    - URI `[HOST]/restapi/qris/checkpaid_qris.php`
+    - METHOD: `GET`
+    - Query Parameter
+        - `do`
+            - Wajib berisi `checkStatus`
+        - `apikey`
+            - berisi `API KEY` yang anda masukan pada tahap
+            questioner, atau yang ada didalam `user_config.json`
+        - `mID`
+            - berisi `mID` yang anda masukan pada tahap
+            questioner, atau yang ada didalam `user_config.json`
+        - `invid`
+            - berisi `invoice id` yang digenerate pada tahap 0
+        - `trxvalue`
+            - berisi jumlah yang ditagihkan ke customer
+        - `trxdate `
+            - tanggal transaksi yang didapatkan pada tahap 0 dengan format `YYYY-mm-dd`
+
 
 ## Kontribusi
 

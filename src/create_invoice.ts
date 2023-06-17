@@ -105,6 +105,8 @@ class Invoice {
             this._paymentMethodBy = paymentMethod;
         }
 
+        this._isPaid = true;
+
         return true;
     }
 
@@ -134,12 +136,13 @@ let config: {
 export async function mixins_checkInvoice(req: Request, res: Response, next: NextFunction) {
     if(config == null) config = await getConfiguration();
 
-    const _invid: string | null | undefined = req.query.mID as string | undefined | null;
-    const _trxvalue: string | null | undefined = req.query.mID as string | undefined | null;
-    const _trxdate: string | null | undefined = req.query.mID as string | undefined | null;
+    const _do: string | null | undefined = req.query.do as string | undefined | null;
+    const _invid: string | null | undefined = req.query.invid as string | undefined | null;
+    const _trxvalue: string | null | undefined = req.query.trxvalue as string | undefined | null;
+    const _trxdate: string | null | undefined = req.query.trxdate as string | undefined | null;
 
     const __fieldcheck = [
-        _invid, _trxvalue, _trxdate
+        _do, _invid, _trxvalue, _trxdate
     ];
 
     if(__fieldcheck.includes(null) || __fieldcheck.includes(undefined) || __fieldcheck.includes("") || __fieldcheck.includes(" ") || __fieldcheck.includes("0")) return res.status(400).json({
@@ -149,8 +152,16 @@ export async function mixins_checkInvoice(req: Request, res: Response, next: Nex
         }
     });
 
+    if(_do as string != "checkStatus") return void res.status(400).json({
+        status: "failed",
+        data: {
+            qris_status: "parameter `do` must be \"checkStatus\" (what we do for you?)"
+        }
+    });
+
     let foundInvoice: null | Invoice = null;
-    for(const [_, invoice] of Array.from(Invoices.entries())) {
+    for(const [_, invoice] of Invoices.entries()) {
+        console.log(invoice.id, _invid)
         if(invoice.id == _invid) {
             foundInvoice = invoice;
             break
@@ -207,12 +218,20 @@ export async function mixins_checkInvoice(req: Request, res: Response, next: Nex
 export async function mixins_createInvoice(req: Request, res: Response, next: NextFunction)  {
     if(config == null) config = await getConfiguration();
 
+    const _do: string | null | undefined = req.query.do as string | undefined | null;
     const _cliTrxNumber: string | null | undefined = req.query.cliTrxNumber as string | undefined | null;
     const _cliTrxAmount: string | null | undefined = req.query.cliTrxAmount as string | undefined | null;
 
     const __fieldcheck = [
-        _cliTrxNumber, _cliTrxAmount,
+        _do, _cliTrxNumber, _cliTrxAmount,
     ];
+
+    if(_do as string != "create-invoice") return void res.status(400).json({
+        status: "failed",
+        data: {
+            qris_status: "parameter `do` must be \"create-invoice\" (what we do for you?)"
+        }
+    });
 
     if(__fieldcheck.includes(null) || __fieldcheck.includes(undefined)) return res.status(400).json({
         status: "failed",
@@ -249,9 +268,13 @@ export async function mixins_createInvoice(req: Request, res: Response, next: Ne
     rd.setHours(rd.getHours() + 7);
 
     const qr = (await QRCode.toBuffer(invoice.qrcode, { errorCorrectionLevel: "H", maskPattern: 7 })).toString("base64")
-    console.log(await QRCode.toString(invoice.qrcode, { errorCorrectionLevel: "H", maskPattern: 7 }));
+    console.log("GENERATED QRCODE:");
+    console.log(await QRCode.toString(invoice.qrcode, { errorCorrectionLevel: "L", maskPattern: 0 }));
     res.status(200).json({
         status: "success",
+        ___unofficial_data: {
+            url: invoice.qrcode,
+        },
         data: {
             qris_content: qr,
             qris_request_date: rd.toISOString().replace("T", " ").replace("Z", "").split(".")[0],

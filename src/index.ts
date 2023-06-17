@@ -6,11 +6,10 @@ import { mixins_checkInvoice, mixins_createInvoice, mixins_makePayments, mixins_
 let IS_BANNED = false;
 function requireAuth(_expectedAPIKEY: string, _expectedMID: number) {
     async function __auth(req: Request, res: Response, next: NextFunction) {
-        const _do = req.query.do as string | null | undefined;
         const _apikey = req.query.apikey as string | null | undefined;
         const _mID = req.query.mID as number | null | undefined;
     
-        const __fieldcheck = [ _do, _apikey, _mID ];
+        const __fieldcheck = [ _apikey, _mID ];
         if(__fieldcheck.includes(null) || __fieldcheck.includes(undefined) || __fieldcheck.includes("") || __fieldcheck.includes(" ") || __fieldcheck.includes(0) || __fieldcheck.includes("0")) return void res.status(400).json({
             status: "failed",
             data: {
@@ -24,13 +23,6 @@ function requireAuth(_expectedAPIKEY: string, _expectedMID: number) {
                 qris_status: "your api key has been banned (what we do for you?)"
             }
         })
-    
-        if(_do as string != "create-invoice") return void res.status(400).json({
-            status: "failed",
-            data: {
-                qris_status: "parameter `do` must be \"create-invoice\" (what we do for you?)"
-            }
-        });
 
         if(_apikey as string != _expectedAPIKEY) return void res.status(401).json({
             status: "failed",
@@ -58,7 +50,7 @@ let USAGE_COUNT = 0;
 function limitAPIUsage(req: Request, res: Response, next: NextFunction) {
     USAGE_COUNT++;
     if(USAGE_COUNT < 200) return next();
-    
+
     USAGE_COUNT = 0;
     IS_BANNED = true;
     return void res.status(400).json({
