@@ -16,7 +16,7 @@ tanpa mengurangi saldo, dengan itu project ini dibuat sebagai
 simulator penyedia QRIS yang dapat anda gunakan untuk mencoba
 integrasi program anda.
 
-Simulator ini dibuat 90% menyerupai
+Simulator ini dibuat 95% menyerupai
 behaviour QRIS itu sendiri, jika program anda lancar ketika menggunakan
 simulator ini, maka anda hanya perlu mengganti beberapa variable untuk
 melanjutkan aplikasi anda ke tahap produksi.
@@ -27,13 +27,13 @@ melanjutkan aplikasi anda ke tahap produksi.
 
 QRIS Simulator memperlukan beberapa data -- yang sebisa mungkin anda mockup -- untuk mensimulasikan proses pembayaran dengan akurat, seperti:
 
-1. `APIKEY`
-2. `mID`
+0. `APIKEY`
+1. `mID`
 
 juga beberapa variable pendukung seperti
 
-1. Server Listening `PORT`
-2. Server Listening `HOSTNAME`
+0. Server Listening `PORT`
+1. Server Listening `HOSTNAME`
 
 QRIS Simulator sudah dilengkapi pertanyaan yang perlu anda jawab 1x ketika pertamakali menggunakan. atau anda dapat membuat file bernama `user_config.json` dan mengisi / merubah sendiri ketika sudah dibuat untuk menghindari questionaire.
 
@@ -51,24 +51,24 @@ Sesuai dengan ketentuan penggunaan API Key untuk API Call, API Key dapat terkena
 
 ## Instalasi
 
-1. Lakukan clone repo ini
+0. Lakukan clone repo ini
     ```
     git clone https://github.com/wowotek/qris_simulator.git
     ```
-2. instalasi dependensi yang dibutuhkan
+1. instalasi dependensi yang dibutuhkan
     ```
     npm install
     ```
-3. jalankan server
+2. jalankan server
     ```
     npm start
     ```
 
 ## Kustomisasi
 
-1. Lakukan step 1 hingga 2 pada tahap instalasi
-2. ubah hal yang perlu anda ubah
-3. jalankan server menggunakan `ts-node-dev`
+0. Lakukan step 0 hingga 1 pada tahap instalasi
+1. ubah hal yang perlu anda ubah
+2. jalankan server menggunakan `ts-node-dev`
     ```
     npm run start-dev
     ```
