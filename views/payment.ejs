@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=BIZ+UDPGothic">
+  <title>Mock Pay QRIS Simulator</title>
+</head>
+<style>
+  * {
+    font-family: "BIZ UDPGothic";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    text-shadow: rgba(0,0,0,.01) 0 0 1px;
+  }
+
+  body,
+  html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #ddd;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #aaa;
+    width: 50%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    gap: 15px;
+  }
+
+  @media only screen and (max-width: 768px) {
+    .container {
+      width: 100vw;
+      height: 100vh;
+    }
+  }
+
+  .container h1 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    font-size: 36px;
+    margin-top: 20px;
+  }
+
+  .container label {
+    margin-left: 20px;
+    font-size: 22px;
+  }
+
+  .container input {
+    margin-left: 20px;
+    margin-right: 20px;
+    font-size: 16px;
+    padding-left: 8px;
+    padding-bottom: 8px;
+    border: 0;
+    outline: 0;
+    background: rgba(0, 0, 0, 0);
+    border-bottom: 1px solid #aaa;
+    border-left: 1px solid #aaa;
+    border-bottom-left-radius: 8px;
+  }
+
+  .container select {
+    margin-left: 20px;
+    margin-right: 20px;
+    font-size: 200%;
+  }
+
+  hr {
+    width: 90%;
+    height: 1px;
+    background-color: #aaa;
+    outline: 0;
+    border: 0;
+  }
+
+  .container .box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+
+  .container .box h3 {
+    padding: 0;
+    margin: 0
+  }
+
+  .container .box h2 {
+    display: flex;
+    justify-content: center;
+    background-color: rgb(108, 218, 108);
+    margin: 7px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    width: 70%;
+  }
+
+  .container .payment {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    margin-bottom: 20px;
+  }
+
+  .container .payment h2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bolder;
+    flex-grow: 1;
+    margin: 0;
+  }
+
+  .container .payment button {
+    width: 90%;
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+    background: #ddd;
+    padding: 0;
+    margin: 0;
+    margin-bottom: 10px;
+    transition: 200ms ease;
+    border-left: 1px solid #eee;
+    border-top: 1px solid #eee;
+    border-right: 1px solid #888;
+    border-bottom: 1px solid #888;
+    background: rgba(0, 0, 0, 0);
+  }
+
+  .container .payment button:hover {
+    border: 1px solid #aaa;
+  }
+
+  .container .payment button:active {
+    border-left: 1px solid #888;
+    border-top: 1px solid #888;
+    border-right: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    background: rgba(0, 255, 0, 1);
+    transition: 2s linear;
+  }
+
+  .container .payment button div {
+    height: 20px;
+  }
+
+  .container .payment button img {
+    object-fit: contain;
+    width: 70%;
+    height: 70%;
+    padding: 0;
+    margin: 0;
+    filter: drop-shadow(0 0 0px rgb(0, 255, 0));
+    transition: 200ms ease
+  }
+
+  .container .payment button:active img {
+    filter: drop-shadow(0 0 50px rgb(0, 255, 0));
+    transition: 2s linear
+  }
+
+  .disabled {
+    border: 1px solid #aaa !important;
+    background: #ccc !important;
+    pointer-events: none;
+  }
+
+  .disabled img{
+    filter: invert(1) brightness(0.5) !important;
+    opacity: 0.4;
+    transition: 300ms ease;
+  }
+
+  .simple_disable {
+    pointer-events: none;
+    filter: blur(4px) grayscale(1);
+  }
+</style>
+
+<body>
+
+  <div class="container">
+    <h1>Payment Mockup</h1>
+    <hr>
+    <div class="box">
+      <h3>Jumlah Tagihan Anda</h3>
+      <h2>Rp<b id="amount"><%= amount %></b><sub>,-</sub></h2>
+    </div>
+    <form action="/pay?t=SOMERANDOMTOKEN" method="POST" id="someform" name="someform"></form>
+    <label for="custn">Nama Anda</label>
+    <input type="text" name="customer_name" id="custn" form="someform">
+
+    <label for="custn">Metode Pembayaran</label>
+    <select name="payment_method" id="pm" form="someform">
+      <option value="shopeepay">ShopeePay</option>
+      <option value="livinbymandiri">LivinByMandiri</option>
+      <option value="blu">Blu</option>
+      <option value="dana">DANA</option>
+      <option value="linkaja">LinkAja</option>
+      <option value="ovo">OVO</option>
+      <option value="gopay">GOPAY</option>
+      <option value="__none__" selected aria-selected="true"></option>
+    </select>
+
+    <div class="payment">
+      <h2>Tekan Selama 3 Detik</h2>
+      <button class="disabled" id="pay_button">
+        <img src="/fingerprint.png" alt="">
+      </button>
+    </div>
+  </div>
+
+</body>
+<script defer>
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+let nameEligible = true;
+let selectEligible = false;
+
+function changePaymentButton() {
+  if(nameEligible && selectEligible) {
+    setTimeout(() => {
+      document.getElementById("pay_button").className = "";
+    }, 250);
+  } else {
+    document.getElementById("pay_button").className = "disabled";
+  }
+}
+
+document.getElementById("custn").oninput = ev => {
+  nameEligible = true;
+  changePaymentButton();
+}
+
+document.getElementById("pm").onchange = ev => {
+  if(document.getElementById("pm").value != "__none__") {
+    selectEligible = true;
+  } else {
+    selectEligible = false;
+  }
+  changePaymentButton();
+}
+
+let counts = 0;
+let buttonPosition = "released";
+document.getElementById("pay_button").onmousedown = ev => {
+  buttonPosition = "down";
+}
+
+document.getElementById("pay_button").onmouseup = ev => {
+  buttonPosition = "released";
+}
+
+let startDate = null;
+let currentDate = null;
+setInterval(() => {
+  if(buttonPosition == "released") { 
+    document.getElementById("custn").className = ""
+    document.getElementById("pm").className = ""
+    startDate = null;
+    currentDate = null;
+    return 
+  }
+  else if (buttonPosition == "down") {
+    if(startDate == null) { startDate = new Date() }
+    currentDate = new Date();
+    document.getElementById("custn").className = "simple_disable";
+    document.getElementById("pm").className = "simple_disable";
+
+    console.log(currentDate.getTime() - startDate.getTime());
+  }
+
+
+  if(currentDate.getTime() - startDate.getTime() >= 2000) {
+    startDate = null;
+    currentDate = null;
+    buttonPosition = "released";
+    setTimeout(() => {
+      buttonPosition = "released";
+      startDate = null;
+      currentDate = null;
+      document.getElementById("someform").submit();
+      buttonPosition = "released";
+      startDate = null;
+      currentDate = null;
+    }, 1)
+  }
+}, 0)
+
+setTimeout(() => {
+  const amountElement = document.getElementById("amount");
+  let amount = amountElement.innerHTML;
+  amount = numberWithCommas(parseFloat(amount));
+
+  amountElement.innerHTML = amount;
+}, 10)
+</script>
+</html>
